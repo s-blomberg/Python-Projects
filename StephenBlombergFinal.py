@@ -109,7 +109,7 @@ def remove_album(collection):
                 remove_title_album = pyip.inputStr("Enter album title: ")
                 for album in collection:
                     if album['title'] != remove_title_album.title():
-                        print(f'\nAlbum by title "{remove_title_album.title()}" not in collection.')
+                        print(f'\n\tAlbum by title "{remove_title_album.title()}" not in collection.')
                         break
                     else:
 
@@ -147,7 +147,7 @@ def find_album(collection):
                 find_title_album = pyip.inputStr("Enter album title: ")
                 for album in collection:
                     if album['title'] != find_title_album.title():
-                        print(f'\nAlbum by title "{find_title_album.title()}" not in collection.')
+                        print(f'\n\tAlbum by title "{find_title_album.title()}" not in collection.')
                         break
                     else:
                         print(f'\nAlbum Found:')
