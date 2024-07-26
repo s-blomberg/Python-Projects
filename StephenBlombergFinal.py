@@ -2,7 +2,6 @@
 # Stephen Blomberg
 # Final Project
 
-
     ##-----------------[Rubric]-----------------##
 
 ##[20 points] Does the program execute with no errors?
@@ -25,7 +24,6 @@
 ##      third party modules, be sure to put in the comments the
 ##      packages that need to be installed (probably from pip).
 
-
     ##-----------------[Concept]----------------##
 
 ##  My project idea is a "Vinyl Vault", a program that takes user input to build a database.
@@ -37,34 +35,48 @@
 ##      5. View the collection in a pleasant format.
 ##      6. Write collection to file/read file to load collection.
 
-
     ##-----------------[Modules]----------------##
 
-#please run "pip install --user pyinputplus" in your terminal to install.
-import pyinputplus as pyip
-import random
 import sys
+import random
 import json
-
+import logging
+logging.basicConfig(filename='vinylvaultlog.txt',
+    level=logging.DEBUG, format=' %(asctime)s -  %(levelname)s -  %(message)s')
+try:
+    import pyinputplus as pyip
+    logging.debug('Module: pyinputplus loaded successfully.')
+except:
+    print('Module missing! Please run "pip install --user pyinputplus" in your terminal.')
+    logging.critical('Pyinputplus module missing!')
+    sys.exit()
 
     ##----------------[Functions]---------------##
 
-#collect album input
 def add_album(collection): 
-
-    #add loop
+    logging.debug("Start add album loop.")
     while True:
-
-        #collect input to fill album dict, pyip for input sanitation
         try:
-            print("\n\tAdd Album to Collection:\n")
-            title = pyip.inputStr("Enter album title: ")
-            artist = pyip.inputStr("Enter album artist: ")
-            year = pyip.inputInt("Enter album release year: ", min=1850, max=2100)
-            variant = pyip.inputStr("Enter vinyl variant/color: ")
-            sale = pyip.inputYesNo("Is this album for sale?: ")
+            print(f"\n\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            print(f"\t~~~Add Album to Collection (or enter nothing to stop):~~~")
+            print(f"\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+            title = pyip.inputStr("Enter album title: ", blank=True)
+            if title == '':
+                break
+            artist = pyip.inputStr("Enter album artist: ", blank=True)
+            if artist == '':
+                break
+            year = pyip.inputInt("Enter album release year: ", min=1850, max=2100, blank=True)
+            if year == '':
+                break
+            variant = pyip.inputStr("Enter vinyl variant/color: ", blank=True)
+            if variant == '':
+                break
+            sale = pyip.inputYesNo("Is this album for sale?: ", blank=True)
+            if sale == '':
+                break
+            logging.debug("Album inputs receieved and formatted.")
 
-            #album to be added to collection, auto formats inputs
             album = { 
                 'title': title.title(),
                 'artist': artist.title(),
@@ -72,102 +84,89 @@ def add_album(collection):
                 'variant': variant.title(),
                 'sale': sale.capitalize()}
 
-            #asks if user input is accurate before appending
+            logging.debug("Ask if user input is accurate before appending collection.")
             validate_entry = pyip.inputMenu(["Yes","No"],\
                             numbered=True,\
                             prompt="\nIs this information correct?\n")
             if validate_entry == 'No':
                 print("\n\tAlbum discarded!")
+                logging.debug("Album discarded.")
                 break
             else:
                 print("\n\tAlbum added successfully!")
                 collection.append(album)
-
-            #asks user if they would like to add more albums, or exit
-            continue_entry = pyip.inputMenu(["Yes","No"],\
-                            numbered=True,\
-                            prompt="\nWould you like to enter another album?\n")
-            if continue_entry == 'No':
-                print("\n\tReturning to Main Menu!")
-                break
+                logging.debug("Album appended to collection.")
         except:
             print("\nError: Add album could not be completed.")
+            logging.error("Error: Add album could not be completed.")
 
-#function to remove album
 def remove_album(collection):
-
-    #checks if collection is empty
+    logging.debug("Start remove album loop.")
     while True:
         try:
             if collection == []:
                 print("\n\tNo albums in collection to remove.")
+                logging.debug("No albums in collection to remove.")
                 break
-
-            #iterate through collection to find title to remove, case insensitive
             else:
-                print("\n\tRemove album from collection:\n")
-                remove_title_album = pyip.inputStr("Enter album title: ")
+                logging.debug("Receive input to find album by title to remove.")
+                print(f"\n\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                print(f"\t~~~Remove Album from Collection (or enter nothing to stop):~~~")
+                print(f"\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+                remove_title_album = pyip.inputStr("Enter album title: ", blank=True)
+                if remove_title_album == '':
+                    break
                 for album in collection:
                     if album['title'] != remove_title_album.title():
-                        print(f'\n\tAlbum by title "{remove_title_album.title()}" not in collection.')
+                        print(f'\n\tAlbum by title "{remove_title_album.title()}" not found in collection.')
+                        logging.debug("{remove_title_album.title()} not found in collection.")
                         break
                     else:
-
                         collection.remove(album)
                         print(f'\nAlbum Removed:')
                         print(f'    "{album['title']}" by {album['artist']} ({album['year']})')
                         print(f'        Variant: {album['variant']}')
                         print(f'        For sale: {album['sale']}')
+                        logging.debug("{album['title']} removed from collection.")
                         break
-                    
-                #asks user if they would like to remove more albums, or exit
-                continue_remove = pyip.inputMenu(["Yes","No"],\
-                                numbered=True,\
-                                prompt="\nWould you like to remove another album?\n")
-                if continue_remove == 'No':
-                    print("\n\tReturning to Main Menu!")
-                    break
-                
         except:
-            print("Error: Remove album could not be completed.") 
+            print("Error: Remove album could not be completed.")
+            logging.error("Error: Remove album could not be completed.")
 
-#function to search collection for album
 def find_album(collection):
-
-    #checks if collection is empty
+    logging.debug("Start find album loop.")
     while True:
         try:
             if collection == []:
                 print("\n\tNo albums in collection to find.")
+                logging.debug("No albums in collection to find.")
                 break
-
-            #iterate through collection to find title, case insensitive
             else:
-                print("\n\tFind album in collection:\n")
-                find_title_album = pyip.inputStr("Enter album title: ")
-                for album in collection:
-                    if album['title'] != find_title_album.title():
-                        print(f'\n\tAlbum by title "{find_title_album.title()}" not in collection.')
-                        break
-                    else:
-                        print(f'\nAlbum Found:')
-                        print(f'    "{album['title']}" by {album['artist']} ({album['year']})')
-                        print(f'        Variant: {album['variant']}')
-                        print(f'        For sale: {album['sale']}')
-                        break
-                    
-                #asks user if they would like to remove more albums, or exit
-                continue_remove = pyip.inputMenu(["Yes","No"],
-                                numbered=True,
-                                prompt="\nWould you like to find another album?\n")
-                if continue_remove == 'No':
-                    print("\n\tReturning to Main Menu!")
+                logging.debug("Receive input to find album by title.")
+                print(f"\n\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+                print(f"\t~~~Find Album in Collection (or enter nothing to stop):~~~")
+                print(f"\t~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+                find_title_album = pyip.inputStr("Enter album title: ",blank=True)
+                if find_title_album == '':
                     break
-                
+                else:
+                    for album in collection:
+                        if album['title'] != find_title_album.title():
+                            print(f'\n\tAlbum by title "{find_title_album.title()}" not found in collection.')
+                            logging.debug('"{find_title_album.title()}" not found in collection.')
+                            break
+                        else:
+                            print(f'\nAlbum Found:')
+                            print(f'    "{album['title']}" by {album['artist']} ({album['year']})')
+                            print(f'        Variant: {album['variant']}')
+                            print(f'        For sale: {album['sale']}')
+                            logging.debug('"{find_title_album.title()}" found in collection.')
+                            break
         except:
-            print("Error: Find album could not be completed.")  
+            print("Error: Find album could not be completed.")
+            logging.error("Error: Find album could not be completed.")
             
-#identify similar values from each album to sort by
+#grouping values from each album to sort by
 def sort_artist(albums):
     return albums['artist']
 def sort_title(albums):
@@ -179,17 +178,19 @@ def sort_variant(albums):
 def sort_sale(albums):
     return albums['sale']
 
-#function to access sort menu
 def sort_collection():
-
-    #checks if collection is empty
-    try:
-        if collection == []:
-            print("\n\tNo albums in collection to sort.")
-
-        #sort menu loop
-        else:
-            while True:
+    logging.debug("Start sort loop.")
+    while True:
+        try:
+            if collection == []:
+                print("\n\tNo albums in collection to sort.")
+                logging.debug("No albums in collection to sort.")
+                break
+            else:
+                print(f"\n\t~~~~~~~~~~~~~~~~~~~~~~")
+                print(f"\t~~~Sort Collection:~~~")
+                print(f"\t~~~~~~~~~~~~~~~~~~~~~~")
+                logging.debug("Entering sort menu.")
                 sort_select = pyip.inputMenu([
                         'Title',
                         'Artist',
@@ -200,122 +201,123 @@ def sort_collection():
                         numbered=True,
                         prompt='\nSort by:\n')
 
-                #sort by title
                 if sort_select == 'Title':
-                    print("\n\tSorted by Title successfully!")
                     collection.sort(key=sort_title)
+                    print("\n\tSorted by Title successfully!")
+                    logging.debug("Sorted by Title successfully.")
                     view_collection(collection)
                     break
-
-                #sort by artist
                 elif sort_select == 'Artist':
-                    print("\n\tSorted by Artist successfully!")
                     collection.sort(key=sort_artist)
+                    print("\n\tSorted by Artist successfully!")
+                    logging.debug("Sorted by Artist successfully.")
                     view_collection(collection)
                     break
-
-                #sort by year
                 elif sort_select == 'Year':
-                    print("\n\tSorted by Year successfully!")
                     collection.sort(key=sort_year)
+                    print("\n\tSorted by Year successfully!")
+                    logging.debug("Sorted by Year successfully.")
                     view_collection(collection)
                     break
-
-                #sort by variant
                 elif sort_select == 'Variant':
-                    print("\n\tSorted by Variant successfully!")
                     collection.sort(key=sort_variant)
+                    print("\n\tSorted by Variant successfully!")
+                    logging.debug("Sorted by Variant successfully.")
                     view_collection(collection)
                     break
-
-                #sort by sale status
                 elif sort_select == 'Sale Status':
-                    print("\n\tSorted by Sale Status successfully!")
                     collection.sort(key=sort_sale)
+                    print("\n\tSorted by Sale Status successfully!")
+                    logging.debug("Sorted by Sale Status successfully.")
                     view_collection(collection)
                     break
-
-                #return to main
-                if sort_select == 'Main':
+                elif sort_select == 'Main':
                     print("\n\tReturning to Main Menu!")
+                    logging.debug("Returning to Main Menu.")
                     break
-    except:
-        print("\nError: Sort collection could not be completed.")
+        except:
+            print("\nError: Sort collection could not be completed.")
+            logging.error("Error: Sort collection could not be completed.")
 
-#function to view collection
 def view_collection(collection):
-
-    #checks if collection is empty
+    logging.debug("Start view collection.")
     try:
         if collection == []:
             print("\n\tNo albums in collection to view.")
-            
-        #loops through each album in collection with a pre-formatted display
+            logging.debug("No albums in collection to view.")
         else:
-            print("\nCollection:")
-            for i, album in enumerate(collection):
-                print(f'{i+1}. "{album['title']}" by {album['artist']} ({album['year']})')
+            logging.debug("Iterating collection with a pre-formatted display.")
+            print(f"\n\t~~~~~~~~~~~~~~~~~~~~~~~~~")
+            print(f"\t~~~Viewing Collection:~~~")
+            print(f"\t~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+            for index, album in enumerate(collection):
+                print(f'{index+1}. "{album['title']}" by {album['artist']} ({album['year']})')
                 print(f'        Variant: {album['variant']}')
                 print(f'        For sale: {album['sale']}')
     except:
         print("\nError: View collection could not be completed.")
+        logging.error("Error: View collection could not be completed.")
 
-#randomly chooses an album from collection
 def random_album(collection):
-
-    #checks if collection is empty
+    logging.debug("Start randomize album.")
     try:
         if collection == []:
             print("\n\tNo albums in collection to randomize.")
-
-        #display random album if possible
+            logging.debug("No albums in collection to randomize.")
         else:
             random_album = random.choice(collection)
-            print(f'\nRandom Album:')
+            print(f"\n\t~~~~~~~~~~~~~~~~~~~~~~")
+            print(f"\t~~~Randomize Album:~~~")
+            print(f"\t~~~~~~~~~~~~~~~~~~~~~~")
+            print(f'\nAlbum Chosen:')
             print(f'    "{random_album['title']}" by {random_album['artist']} ({random_album['year']})')
             print(f'        Variant: {random_album['variant']}')
             print(f'        For sale: {random_album['sale']}')
+            logging.debug("Random album chosen.")
     except:
         print("\nError: Randomize could not be completed.")
+        logging.error("Error: Randomize could not be complete.")
 
-#commits our album collection to permanent 'vault' file
 def save_collection(collection):
+    logging.debug("Start save collection.")
     try:
         with open('vinylvault.json', 'w') as file:
             json.dump(collection, file)
         print(f'\n\tCollection saved to "vinylvault.json"')
+        logging.debug('Collection saved to "vinylvault.json"')
     except:
         print("\nError: Save collection could not be completed.")
+        logging.error("Save collection could not be completed.")
 
-#loads existing 'vault' file to our album collection
 def load_collection():
+    logging.debug("Start load collection.")
     global collection
     try:
         with open('vinylvault.json', 'r') as file:
             collection = json.load(file)
             print(f'\n\tCollection loaded from "vinylvault.json"')
-            return
+            logging.debug('Collection loaded from "vinylvault.json"')
     except FileNotFoundError:
         print("\n\tNo save file found.")
+        logging.debug("No save file found.")
     except:
         print("\nError: Load could not be completed.")
-        
+        logging.error("Load could not be completed.")
 
     ##---------------[Main Program]----------------##
 
-#banner signals program start
+logging.debug("Program start.")
 print("""
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         ~~~~~~~~~Welcome to Vinyl Vault~~~~~~~~~
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~""")
 
-#initialize albums repository
+logging.debug("Album collection initialized.")
 collection = [] 
 
-#load collection if exists
 load_collection()
 
-#main menu loop
+logging.debug("Start main menu loop.")
 while True: 
     main_select = pyip.inputMenu([
         'Add',
@@ -346,4 +348,5 @@ while True:
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         ~~~Thank you for using Vinyl Vault~~~
         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~""")
+        logging.debug("Program end.")
         sys.exit()
